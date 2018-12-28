@@ -8,7 +8,8 @@ module.exports = () => ({
 	entry: {
 		content: './source/content',
 		background: './source/background',
-		options: './source/options'
+		options: './source/options',
+		addrepo: './source/addrepo'
 	},
 	output: {
 		path: path.join(__dirname, 'distribution'),

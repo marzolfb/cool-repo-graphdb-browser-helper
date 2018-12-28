@@ -1,22 +1,17 @@
 {
-	"name": "Refined GitHub",
+	"name": "Cool Repo GraphDB Browser Helper",
 	"version": "0.0.0",
 	"description": "Simplifies the GitHub interface and adds useful features",
-	"homepage_url": "https://github.com/sindresorhus/refined-github",
+	"homepage_url": "https://github.com/marzolfb/cool-repo-graphdb-browser-helper",
 	"manifest_version": 2,
 	"minimum_chrome_version": "60",
-	"applications": {
-		"gecko": {
-			"id": "{a4c4eda4-fb84-4a84-b4a1-f7c1cbf2a1ad}",
-			"strict_min_version": "55.0"
-		}
-	},
 	"permissions": [
 		"storage",
 		"clipboardWrite",
 		"contextMenus",
 		"activeTab",
-		"https://api.github.com/*"
+		"https://api.github.com/*",
+		"tabs"
 	],
 	"browser_action": {
 		"default_icon": "icon.png",
@@ -53,7 +48,8 @@
 			],
 			"js": [
 				"browser-polyfill.min.js",
-				"content.js"
+				"content.js",
+				"addrepo.js"
 			]
 		}
 	]

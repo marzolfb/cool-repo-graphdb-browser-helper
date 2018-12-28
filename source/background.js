@@ -28,17 +28,28 @@ new OptionsSync().define({
 	]
 });
 
-browser.runtime.onMessage.addListener(async message => {
-	if (!message || message.action !== 'openAllInTabs') {
+browser.runtime.onMessage.addListener(async msg => {
+	if (!msg) {
 		return;
 	}
-	const [currentTab] = await browser.tabs.query({currentWindow: true, active: true});
-	for (const [i, url] of message.urls.entries()) {
-		browser.tabs.create({
-			url,
-			index: currentTab.index + i + 1,
-			active: false
+
+	if (msg.type === 'addRepo') {
+        browser.windows.create({
+			url: browser.runtime.getURL('addrepoform.html?owner='+msg.owner+'&repo='+msg.repo),
+			width: 300,
+			height: 300
 		});
+    }
+
+	if (message.action === 'openAllInTabs') {
+		const [currentTab] = await browser.tabs.query({currentWindow: true, active: true});
+		for (const [i, url] of message.urls.entries()) {
+			browser.tabs.create({
+				url,
+				index: currentTab.index + i + 1,
+				active: false
+			});
+		}
 	}
 });
 
