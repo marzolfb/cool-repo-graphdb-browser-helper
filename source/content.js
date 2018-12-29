@@ -22,16 +22,16 @@ async function init() {
 		return;
 	}
 	if (document.body.classList.contains('logged-out')) {
-		console.warn('%cCool Repo GraphDB Browser Helper%c only works when you’re logged in to GitHub.', 'font-weight: bold', '');
+		console.warn('%cRepo GraphDB Browser Helper%c only works when you’re logged in to GitHub.', 'font-weight: bold', '');
 		return;
 	}
 
-	if (select.exists('html.cool-repo-graphdb-browser-helper')) {
-		console.warn('Cool Repo GraphDB Browser Helper has been loaded twice. If you didn’t install the developer version, this may be a bug. Please report it to: https://github.com/sindresorhus/cool-repo-graphdb-browser-helper/issues/565');
+	if (select.exists('html.repo-graphdb-browser-helper')) {
+		console.warn('Repo GraphDB Browser Helper has been loaded twice. If you didn’t install the developer version, this may be a bug. Please report it to: https://github.com/sindresorhus/cool-repo-graphdb-browser-helper/issues/565');
 		return;
 	}
 
-	document.documentElement.classList.add('cool-repo-graphdb-browser-helper');
+	document.documentElement.classList.add('repo-graphdb-browser-helper');
 
 	injectCustomCSS();
 

@@ -61,21 +61,30 @@ async function repoNode(txn, repoName) {
     return repoNode;
 }
 
+async function relatedRepoNode(txn, inputTextID) {
+    const relatedRepoInput = select(inputTextID).value
+
+    if (relatedRepoInput.length === 0) return {};
+
+    const {owner: relatedOwner, repo: relatedRepo} = ownerAndRepo(relatedRepoInput);
+    let relatedRepoNode = await repoNode(txn, relatedRepo);
+    relatedRepoNode["org"] = await ownerNode(txn, relatedOwner);
+
+    return relatedRepoNode;
+}
+
 async function addRepo(dgraphClient, owner, repo) {
     // Create a new transaction.
     const txn = dgraphClient.newTxn();
     try {
-        const similarTo = select("#similar-to").value
-        const {owner: similarToOwner, repo: similarToRepo} = ownerAndRepo(similarTo);
-
+        
         let addRepoNode = await repoNode(txn, repo);
         addRepoNode["org"] = await ownerNode(txn, owner);;
         
-        let similarToRepoNode = await repoNode(txn, similarToRepo);
-        similarToRepoNode["org"] = await ownerNode(txn, similarToOwner);
+        addRepoNode["similar_to"] = await relatedRepoNode(txn, "#similar-to")
+        addRepoNode["conjoined_with"] = await relatedRepoNode(txn, "#conjoined-with")
+        addRepoNode["built_on"] = await relatedRepoNode(txn, "#built-on")
 
-        addRepoNode["similar_to"] = similarToRepoNode
-        
         await txn.mutate({ setJson: addRepoNode });
 
         await txn.commit();
