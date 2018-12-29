@@ -13,14 +13,21 @@ import OptionsSync from 'webext-options-sync';
 export const v3 = (...args) => call(fetch3, ...args);
 export const v4 = (...args) => call(fetch4, ...args);
 
-const api = location.hostname === 'github.com' ? 'https://api.github.com/' : `${location.origin}/api/`;
+const api = 'https://api.github.com/';
 const cache = new Map();
 
 function fetch3(query, personalToken) {
+	// const headers = {
+	// 	'User-Agent': 'Refined GitHub',
+	// 	Accept: 'application/vnd.github.v3+json'
+	// };
+
+	// Custom accept header for getting repo topics (in preview mode currently)
 	const headers = {
 		'User-Agent': 'Refined GitHub',
-		Accept: 'application/vnd.github.v3+json'
+		Accept: 'application/vnd.github.mercy-preview+json'
 	};
+	
 	if (personalToken) {
 		headers.Authorization = `token ${personalToken}`;
 	}

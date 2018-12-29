@@ -1,4 +1,5 @@
 import select from 'select-dom';
+import * as api from './libs/api';
 
 const dgraph = require("dgraph-js-http");
 
@@ -61,6 +62,35 @@ async function repoNode(txn, repoName) {
     return repoNode;
 }
 
+async function topicNode(txn, topicName) {
+    let topicNode = {
+        name: topicName
+    }
+    let query = `query topics($topicName: string) {
+        topics(func: eq(name, $topicName))
+        {
+            uid
+        }
+    }`;
+    let vars = { $topicName: topicName };
+    let res = await txn.queryWithVars(query, vars);
+    let topics = res.data.topics;
+    if (topics.length > 0) topicNode["uid"] = topics[0].uid;
+
+    return topicNode;
+}
+
+async function topicNodes(txn, topicNames) {
+	let topicNodes = [];
+    if (topicNames && topicNames.length > 0) {
+        for (const topicName of topicNames) {
+            const topicNodeToAdd = await topicNode(txn, topicName);
+            topicNodes.push(topicNodeToAdd);
+        }
+    }
+    return topicNodes;
+}
+
 async function relatedRepoNode(txn, inputTextID) {
     const relatedRepoInput = select(inputTextID).value
 
@@ -73,18 +103,27 @@ async function relatedRepoNode(txn, inputTextID) {
     return relatedRepoNode;
 }
 
+async function fetchRepoInfoFromApi(owner, repo) {
+	const response = await api.v3(`repos/${owner}/${repo}`);
+	if (response) return response;
+}
+
 async function addRepo(dgraphClient, owner, repo) {
-    // Create a new transaction.
     const txn = dgraphClient.newTxn();
     try {
         
         let addRepoNode = await repoNode(txn, repo);
-        addRepoNode["org"] = await ownerNode(txn, owner);;
+        addRepoNode["org"] = await ownerNode(txn, owner);
         
-        addRepoNode["similar_to"] = await relatedRepoNode(txn, "#similar-to")
-        addRepoNode["conjoined_with"] = await relatedRepoNode(txn, "#conjoined-with")
-        addRepoNode["built_on"] = await relatedRepoNode(txn, "#built-on")
+        addRepoNode["similar_to"] = await relatedRepoNode(txn, "#similar-to");
+        addRepoNode["conjoined_with"] = await relatedRepoNode(txn, "#conjoined-with");
+        addRepoNode["built_on"] = await relatedRepoNode(txn, "#built-on");
 
+        const repoInfo = await fetchRepoInfoFromApi(owner, repo);
+        addRepoNode["description"] = repoInfo.description;
+        addRepoNode["website"] = repoInfo.homepage;        
+        addRepoNode["topic"] = await topicNodes(txn, repoInfo.topics);
+        
         await txn.mutate({ setJson: addRepoNode });
 
         await txn.commit();
@@ -106,6 +145,7 @@ if (select.exists('.btn-add-repo')) {
             close();
         }).catch((e) => {
             console.log("ERROR: ", e);
+            select("#addrepomsgs").innerHTML="";
             select("#addrepomsgs").append(e);
         });
 
